@@ -28,8 +28,23 @@ export type Hospital = {
   priceLevel: "₦" | "₦₦" | "₦₦₦";
 };
 
+export type Pharmacy = {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  phone: string;
+  latitude: number;
+  longitude: number;
+  open24h: boolean;
+  services: string[];
+  verified: boolean;
+};
+
 export type SearchFilters = {
   query: string;
+  location: string;
   state: string;
   specialty: string;
   ownership: string;
@@ -43,4 +58,12 @@ export type Review = {
   rating: number;
   text: string;
   date: string;
+};
+
+export type AppointmentRequest = {
+  id: string;
+  hospitalId: string;
+  date: string;
+  note: string;
+  status: "pending" | "submitted";
 };

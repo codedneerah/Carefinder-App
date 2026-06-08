@@ -12,6 +12,7 @@ describe("hospital filtering", () => {
   it("searches names, cities, LGAs, and specialties", () => {
     const results = filterHospitals(hospitals, {
       query: "orthopaedics",
+      location: "",
       state: "",
       specialty: "",
       ownership: "",
@@ -23,6 +24,7 @@ describe("hospital filtering", () => {
   it("combines state, specialty, ownership, and emergency filters", () => {
     const results = filterHospitals(hospitals, {
       query: "",
+      location: "",
       state: "Lagos",
       specialty: "Maternity",
       ownership: "Private",
@@ -45,6 +47,7 @@ describe("shareable filters", () => {
   it("round trips active filters through URL parameters", () => {
     const filters = {
       query: "Lagos",
+      location: "",
       state: "Lagos",
       specialty: "Emergency",
       ownership: "",

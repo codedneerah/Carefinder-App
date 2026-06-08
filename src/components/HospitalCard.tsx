@@ -5,9 +5,13 @@ import { Icon } from "./Icon";
 export function HospitalCard({
   hospital,
   compact = false,
+  bookmarked = false,
+  onBookmark,
 }: {
   hospital: Hospital;
   compact?: boolean;
+  bookmarked?: boolean;
+  onBookmark?: () => void;
 }) {
   return (
     <article className={compact ? "hospital-card compact" : "hospital-card"}>
@@ -25,10 +29,24 @@ export function HospitalCard({
             </div>
             <h3>{hospital.name}</h3>
           </div>
-          <span className="rating">
-            <Icon name="star" size={15} />
-            {hospital.rating}
-          </span>
+          <div className="card-heading-actions">
+            {onBookmark && (
+              <button
+                type="button"
+                className={`bookmark-button ${bookmarked ? "active" : ""}`}
+                aria-label={
+                  bookmarked ? "Remove from favorites" : "Save hospital"
+                }
+                onClick={onBookmark}
+              >
+                <Icon name="heart" size={16} />
+              </button>
+            )}
+            <span className="rating">
+              <Icon name="star" size={15} />
+              {hospital.rating}
+            </span>
+          </div>
         </div>
         <p className="location-line">
           <Icon name="location" size={16} />

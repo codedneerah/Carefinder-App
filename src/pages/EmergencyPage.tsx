@@ -10,14 +10,29 @@ const contacts = [
     note: "Police, fire, or medical emergency",
   },
   {
-    label: "Lagos State Ambulance",
+    label: "Ambulance",
     number: "767",
     note: "LASAMBUS emergency response",
   },
   {
-    label: "Federal Road Safety",
+    label: "Police",
+    number: "199",
+    note: "Police response across Nigeria",
+  },
+  {
+    label: "Fire Service",
+    number: "128",
+    note: "Fire and rescue support",
+  },
+  {
+    label: "FRSC",
     number: "122",
-    note: "Road crashes and highway emergencies",
+    note: "Road and highway emergencies",
+  },
+  {
+    label: "NEMA",
+    number: "07006362362",
+    note: "National emergency management response",
   },
 ];
 

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Icon } from "./Icon";
+import { useAuthSession } from "../lib/auth";
 
 export function Header() {
+  const user = useAuthSession();
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     const saved = localStorage.getItem("carefinder-theme");
@@ -39,11 +41,17 @@ export function Header() {
           <NavLink to="/hospitals" onClick={() => setOpen(false)}>
             Find care
           </NavLink>
+          <NavLink to="/pharmacies" onClick={() => setOpen(false)}>
+            Pharmacy finder
+          </NavLink>
           <NavLink to="/health-tools" onClick={() => setOpen(false)}>
             Understand results
           </NavLink>
           <NavLink to="/emergency" onClick={() => setOpen(false)}>
             Emergency
+          </NavLink>
+          <NavLink to="/favorites" onClick={() => setOpen(false)}>
+            Favorites
           </NavLink>
           <button
             className="theme-toggle"
@@ -56,9 +64,9 @@ export function Header() {
           >
             <Icon name={theme === "light" ? "moon" : "sun"} size={18} />
           </button>
-          <NavLink className="admin-link" to="/admin" onClick={() => setOpen(false)}>
+          <NavLink className="auth-link" to="/auth" onClick={() => setOpen(false)}>
             <Icon name="user" size={17} />
-            Admin
+            {user?.email ? "Account" : "Sign in"}
           </NavLink>
         </nav>
       </div>

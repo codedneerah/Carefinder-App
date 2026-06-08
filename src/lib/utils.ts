@@ -3,6 +3,7 @@ import type { Hospital, SearchFilters } from "../types";
 
 export const defaultFilters: SearchFilters = {
   query: "",
+  location: "",
   state: "",
   specialty: "",
   ownership: "",
@@ -14,6 +15,7 @@ export function filterHospitals(
   filters: SearchFilters,
 ): Hospital[] {
   const query = filters.query.trim().toLowerCase();
+  const locationQuery = filters.location.trim().toLowerCase();
 
   return items.filter((hospital) => {
     const searchable = [
@@ -27,8 +29,16 @@ export function filterHospitals(
       .join(" ")
       .toLowerCase();
 
+    const locationMatch =
+      !locationQuery ||
+      [hospital.city, hospital.lga, hospital.address]
+        .join(" ")
+        .toLowerCase()
+        .includes(locationQuery);
+
     return (
       (!query || searchable.includes(query)) &&
+      locationMatch &&
       (!filters.state || hospital.state === filters.state) &&
       (!filters.specialty ||
         hospital.specialties.includes(filters.specialty)) &&
@@ -49,6 +59,7 @@ export function filtersToSearchParams(filters: SearchFilters) {
 export function filtersFromSearchParams(params: URLSearchParams): SearchFilters {
   return {
     query: params.get("query") ?? "",
+    location: params.get("location") ?? "",
     state: params.get("state") ?? "",
     specialty: params.get("specialty") ?? "",
     ownership: params.get("ownership") ?? "",

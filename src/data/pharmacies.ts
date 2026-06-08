@@ -1,0 +1,43 @@
+import type { Pharmacy } from "../types";
+
+export const pharmacies: Pharmacy[] = [
+  {
+    id: "pharmacy-lekkiplus",
+    name: "LekkiPlus Pharmacy",
+    address: "5 Admiralty Way, Lekki",
+    city: "Lagos",
+    state: "Lagos",
+    phone: "+234 800 123 4567",
+    open24h: false,
+    latitude: 6.4458,
+    longitude: 3.4723,
+    services: ["Prescription refills", "COVID-19 tests", "Medical advice"],
+    verified: true,
+  },
+  {
+    id: "pharmacy-abuja-care",
+    name: "Abuja Care Pharmacy",
+    address: "14 Aminu Kano Crescent, Wuse II",
+    city: "Abuja",
+    state: "FCT",
+    phone: "+234 809 123 4568",
+    open24h: false,
+    latitude: 9.0652,
+    longitude: 7.4833,
+    services: ["Vitamins", "Diabetes supplies", "Medication counselling"],
+    verified: true,
+  },
+  {
+    id: "pharmacy-emergency-24",
+    name: "24/7 Health Pharmacy",
+    address: "30 Marina Road, Lagos Island",
+    city: "Lagos",
+    state: "Lagos",
+    phone: "+234 812 345 6789",
+    open24h: true,
+    latitude: 6.4429,
+    longitude: 3.3906,
+    services: ["Emergency medicines", "Travel health", "Home delivery"],
+    verified: true,
+  },
+];

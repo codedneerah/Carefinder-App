@@ -132,6 +132,37 @@ export function HomePage() {
         </div>
       </section>
 
+      <section className="service-categories section-pad">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">Nearby healthcare services</span>
+            <h2>Search by category</h2>
+          </div>
+        </div>
+        <div className="category-grid">
+          <Link className="category-card" to="/hospitals?query=Hospital">
+            <strong>Hospitals</strong>
+            <p>Verified hospital listings for general and specialist care.</p>
+          </Link>
+          <Link className="category-card" to="/hospitals?query=Clinic">
+            <strong>Clinics</strong>
+            <p>Local clinics for outpatient care and routine visits.</p>
+          </Link>
+          <Link className="category-card" to="/hospitals?query=Laboratory">
+            <strong>Laboratories</strong>
+            <p>Testing centres for blood work, imaging, and diagnostics.</p>
+          </Link>
+          <Link className="category-card" to="/pharmacies">
+            <strong>Pharmacies</strong>
+            <p>Find pharmacies that offer delivery and 24-hour service.</p>
+          </Link>
+          <Link className="category-card" to="/hospitals?query=Blood bank">
+            <strong>Blood banks</strong>
+            <p>Locate blood centres for donation and emergency supply.</p>
+          </Link>
+        </div>
+      </section>
+
       <section className="featured-section section-pad">
         <div className="section-heading">
           <div>

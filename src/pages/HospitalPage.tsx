@@ -1,10 +1,37 @@
 import { Link, useParams } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
 import { Icon } from "../components/Icon";
-import { hospitals, reviews } from "../data/hospitals";
+import { hospitals, reviews as initialReviews } from "../data/hospitals";
+import {
+  getReviewsForHospital,
+  isHospitalBookmarked,
+  submitAppointment,
+  submitReview,
+  toggleHospitalBookmark,
+} from "../lib/storage";
 
 export function HospitalPage() {
   const { hospitalId } = useParams();
   const hospital = hospitals.find(({ id }) => id === hospitalId);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [hospitalReviews, setHospitalReviews] = useState(() => [] as typeof initialReviews);
+  const [reviewAuthor, setReviewAuthor] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState("");
+  const [appointmentNote, setAppointmentNote] = useState("");
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hospital) return;
+    setBookmarked(isHospitalBookmarked(hospital.id));
+    const storedReviews = getReviewsForHospital(hospital.id);
+    setHospitalReviews([
+      ...initialReviews.filter((review) => review.hospitalId === hospital.id),
+      ...storedReviews,
+    ]);
+  }, [hospital]);
 
   if (!hospital) {
     return (
@@ -17,9 +44,92 @@ export function HospitalPage() {
     );
   }
 
-  const hospitalReviews = reviews.filter(
-    ({ hospitalId: id }) => id === hospital.id,
-  );
+  function clearMessages() {
+    window.setTimeout(() => {
+      setStatusMessage(null);
+      setErrorMessage(null);
+    }, 2200);
+  }
+
+  function copyText(value: string, label: string) {
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        setStatusMessage(`${label} copied`);
+        clearMessages();
+      })
+      .catch(() => {
+        setErrorMessage(`Unable to copy ${label}.`);
+        clearMessages();
+      });
+  }
+
+  function handleToggleBookmark() {
+    if (!hospital) return;
+    const nextState = !bookmarked;
+    toggleHospitalBookmark(hospital.id);
+    setBookmarked(nextState);
+    setStatusMessage(
+      nextState ? "Saved to favorites." : "Removed from favorites.",
+    );
+    clearMessages();
+  }
+
+  function handleSubmitReview(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!hospital) return;
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    if (!reviewAuthor.trim() || !reviewText.trim()) {
+      setErrorMessage("Enter your name and review to continue.");
+      clearMessages();
+      return;
+    }
+
+    const newReview = submitReview(hospital.id, {
+      author: reviewAuthor.trim(),
+      rating: reviewRating,
+      text: reviewText.trim(),
+    });
+
+    setHospitalReviews((current) => [newReview, ...current]);
+    setReviewAuthor("");
+    setReviewText("");
+    setReviewRating(5);
+    setStatusMessage("Thanks — your review has been added.");
+    clearMessages();
+  }
+
+  function handleSubmitAppointment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!hospital) return;
+    setErrorMessage(null);
+    setStatusMessage(null);
+
+    if (!appointmentDate) {
+      setErrorMessage("Please choose a date for your appointment request.");
+      clearMessages();
+      return;
+    }
+
+    submitAppointment({
+      hospitalId: hospital.id,
+      date: appointmentDate,
+      note: appointmentNote.trim(),
+    });
+
+    setAppointmentDate("");
+    setAppointmentNote("");
+    setStatusMessage("Appointment request submitted successfully.");
+    clearMessages();
+  }
+
+  const reportHref = `mailto:report@carefinder.app?subject=Incorrect%20information%20for%20${encodeURIComponent(
+    hospital.name,
+  )}&body=Please%20update%20the%20details%20for%20${encodeURIComponent(
+    hospital.name,
+  )}.`;
 
   return (
     <div className="detail-page">
@@ -65,7 +175,24 @@ export function HospitalPage() {
             <a className="button secondary" href={`tel:${hospital.phone}`}>
               <Icon name="phone" size={17} /> Call hospital
             </a>
+            <button
+              type="button"
+              className="button outline"
+              onClick={() => copyText(`${hospital.phone} • ${hospital.email}`, "Contact info")}
+            >
+              <Icon name="share" size={17} /> Copy contact
+            </button>
+            <button
+              type="button"
+              className={`button bookmark ${bookmarked ? "active" : ""}`}
+              onClick={handleToggleBookmark}
+            >
+              <Icon name="heart" size={17} />
+              {bookmarked ? "Saved" : "Save"}
+            </button>
           </div>
+          {statusMessage && <p className="success-message">{statusMessage}</p>}
+          {errorMessage && <p className="field-error">{errorMessage}</p>}
         </div>
       </section>
 
@@ -108,26 +235,100 @@ export function HospitalPage() {
           </div>
           <div className="content-card">
             <div className="section-heading">
-              <h2>Patient reviews</h2>
-              <button className="button secondary small">Write a review</button>
+              <h2>Request an appointment</h2>
+              <small>
+                Choose a date, add details, and send a request to the hospital.
+              </small>
             </div>
-            {hospitalReviews.length ? (
-              hospitalReviews.map((review) => (
-                <article className="review" key={review.id}>
-                  <div className="review-avatar">{review.author[0]}</div>
-                  <div>
-                    <strong>{review.author}</strong>
-                    <div className="review-stars">
-                      {"★".repeat(review.rating)}
+            <form className="appointment-form" onSubmit={handleSubmitAppointment}>
+              <label>
+                Hospital
+                <input value={hospital.name} disabled />
+              </label>
+              <label>
+                Appointment date
+                <input
+                  type="date"
+                  value={appointmentDate}
+                  onChange={(event) => setAppointmentDate(event.target.value)}
+                  required
+                />
+              </label>
+              <label>
+                Note for the hospital team
+                <textarea
+                  value={appointmentNote}
+                  onChange={(event) => setAppointmentNote(event.target.value)}
+                  placeholder="Tell the staff what you need or your preferred service"
+                />
+              </label>
+              <button className="button primary" type="submit">
+                Submit request
+              </button>
+            </form>
+          </div>
+          <div className="content-card">
+            <div className="section-heading">
+              <h2>Patient reviews</h2>
+              <p>Share your experience and help others choose the right facility.</p>
+            </div>
+            <form className="review-form" onSubmit={handleSubmitReview}>
+              <label>
+                Your name
+                <input
+                  value={reviewAuthor}
+                  onChange={(event) => setReviewAuthor(event.target.value)}
+                  placeholder="First name or initials"
+                  required
+                />
+              </label>
+              <label>
+                Rating
+                <select
+                  value={reviewRating}
+                  onChange={(event) =>
+                    setReviewRating(Number(event.target.value))
+                  }
+                >
+                  {[5, 4, 3, 2, 1].map((value) => (
+                    <option value={value} key={value}>
+                      {value} star{value > 1 ? "s" : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Review
+                <textarea
+                  value={reviewText}
+                  onChange={(event) => setReviewText(event.target.value)}
+                  placeholder="What was the service like?"
+                  required
+                />
+              </label>
+              <button className="button secondary" type="submit">
+                Submit review
+              </button>
+            </form>
+            <div className="review-list">
+              {hospitalReviews.length ? (
+                hospitalReviews.map((review) => (
+                  <article className="review" key={review.id}>
+                    <div className="review-avatar">{review.author[0]}</div>
+                    <div>
+                      <strong>{review.author}</strong>
+                      <div className="review-stars">
+                        {"★".repeat(review.rating)}
+                      </div>
+                      <p>{review.text}</p>
+                      <small>{review.date}</small>
                     </div>
-                    <p>{review.text}</p>
-                    <small>{review.date}</small>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <p>No published reviews yet.</p>
-            )}
+                  </article>
+                ))
+              ) : (
+                <p>No published reviews yet.</p>
+              )}
+            </div>
           </div>
         </div>
         <aside className="contact-card">
@@ -143,14 +344,48 @@ export function HospitalPage() {
             <Icon name="phone" />
             <div>
               <strong>Phone</strong>
-              <a href={`tel:${hospital.phone}`}>{hospital.phone}</a>
+              <div className="contact-actions">
+                <a href={`tel:${hospital.phone}`}>{hospital.phone}</a>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => copyText(hospital.phone, "Phone number")}
+                >
+                  Copy
+                </button>
+              </div>
             </div>
           </div>
           <div className="contact-row">
             <Icon name="share" />
             <div>
               <strong>Email</strong>
-              <a href={`mailto:${hospital.email}`}>{hospital.email}</a>
+              <div className="contact-actions">
+                <a href={`mailto:${hospital.email}`}>{hospital.email}</a>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => copyText(hospital.email, "Email address")}
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="contact-row">
+            <Icon name="location" />
+            <div>
+              <strong>Address</strong>
+              <div className="contact-actions">
+                <span>{hospital.address}, {hospital.city}</span>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => copyText(`${hospital.address}, ${hospital.city}`, "Address")}
+                >
+                  Copy
+                </button>
+              </div>
             </div>
           </div>
           <div className="emergency-status">
@@ -168,9 +403,12 @@ export function HospitalPage() {
               </span>
             </div>
           </div>
+          <div className="contact-actions secondary-link">
+            <a href={reportHref}>Report incorrect information</a>
+          </div>
           <p className="disclaimer">
-            Facility information can change. Call ahead to confirm services,
-            cost, and availability.
+            Facility details can change. Call ahead to confirm services, cost,
+            and availability.
           </p>
         </aside>
       </section>

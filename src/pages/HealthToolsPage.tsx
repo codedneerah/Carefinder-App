@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Icon } from "../components/Icon";
 
@@ -64,10 +64,27 @@ export function HealthToolsPage() {
   const [explained, setExplained] = useState(false);
   const [medicine, setMedicine] = useState("");
   const [medicineResult, setMedicineResult] = useState<string[] | null>(null);
+  const [resultImage, setResultImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   function selectTab(tab: string) {
     setParams(tab === "medicine" ? { tab: "medicine" } : {});
   }
+
+  function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setResultImage(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  }
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   function checkMedicine(event: React.FormEvent) {
     event.preventDefault();
@@ -146,6 +163,20 @@ export function HealthToolsPage() {
                 <span>{guidance.unit}</span>
               </div>
             </label>
+            <label className="file-upload">
+              Upload result image
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+              />
+            </label>
+            {previewUrl && (
+              <div className="image-preview">
+                <img src={previewUrl} alt="Uploaded test result preview" />
+                <small>{resultImage?.name}</small>
+              </div>
+            )}
             <button
               className="button primary"
               disabled={!value.trim()}
@@ -153,6 +184,13 @@ export function HealthToolsPage() {
             >
               Explain this result
             </button>
+          </div>
+          <div className="result-note">
+            <Icon name="shield" />
+            <p>
+              Uploaded images remain on your device and are only used locally to
+              help you match your result details.
+            </p>
           </div>
           <div className={explained ? "explanation-card visible" : "explanation-card"}>
             {explained ? (

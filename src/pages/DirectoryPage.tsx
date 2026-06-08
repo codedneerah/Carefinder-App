@@ -55,7 +55,7 @@ export function DirectoryPage() {
     window.setTimeout(() => setCopied(false), 1800);
   }
 
-  function useLocation() {
+  function findNearby() {
     setLocationLabel("Finding you…");
     navigator.geolocation?.getCurrentPosition(
       () => setLocationLabel("Showing care near you"),
@@ -77,10 +77,18 @@ export function DirectoryPage() {
         <label className="search-field">
           <Icon name="search" />
           <input
-            aria-label="Search directory"
-            placeholder="Search hospital, city or LGA"
+            aria-label="Search facility, specialty or service"
+            placeholder="Search hospital, city, LGA or specialty"
             value={filters.query}
             onChange={(event) => update("query", event.target.value)}
+          />
+        </label>
+        <label>
+          City or LGA
+          <input
+            placeholder="Lagos, Abuja Municipal, Lekki"
+            value={filters.location}
+            onChange={(event) => update("location", event.target.value)}
           />
         </label>
         <select
@@ -108,17 +116,7 @@ export function DirectoryPage() {
             </option>
           ))}
         </select>
-        <select
-          aria-label="Filter by ownership"
-          value={filters.ownership}
-          onChange={(event) => update("ownership", event.target.value)}
-        >
-          <option value="">All ownership</option>
-          <option>Public</option>
-          <option>Private</option>
-          <option>Mission</option>
-        </select>
-        <button className="button location" onClick={useLocation}>
+        <button className="button location" onClick={findNearby}>
           <Icon name="location" size={17} />
           {locationLabel || "Near me"}
         </button>
